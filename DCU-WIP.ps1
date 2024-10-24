@@ -49,7 +49,7 @@ function Remove-ConflictingApps {
 }
 
  # Set TLS 1.2 
-[Net.ServicePointManager]:: SecureProtocol = [Net.SecurityyProtocolType]::Tls12   
+[Net.ServicePointManager]:: SecureProtocol = [Net.SecurityProtocolType]::Tls12   
 
 function Install-DellCommandUpdate {
     $model = Get-DellModel
