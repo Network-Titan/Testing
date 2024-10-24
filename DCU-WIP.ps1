@@ -2,7 +2,6 @@
 # This is the file I will be modifiying. 
 
 
-
 $tempDir = "$env:TEMP\TEMP-DCU"
 $installerPath = "$tempDir\DellCommandUpdateInstaller.exe"
 
@@ -12,9 +11,8 @@ $dellModelInstallers = @{
     "OptiPlex" = "https://dl.dell.com/FOLDER11914128M/1/Dell-Command-Update-Windows-Universal-Application_9M35M_WIN_5.4.0_A00.EXE"
     "Precision" = "https://dl.dell.com/FOLDER11914128M/1/Dell-Command-Update-Windows-Universal-Application_9M35M_WIN_5.4.0_A00.EXE"
     "Vostro" = "https://dl.dell.com/FOLDER11914128M/1/Dell-Command-Update-Windows-Universal-Application_9M35M_WIN_5.4.0_A00.EXE"
-    # Need to update the download paths
+    # Update links
 }
-
 
 $conflictingApps = @(
     "Dell Update",
@@ -22,10 +20,6 @@ $conflictingApps = @(
     "Dell SupportAssistAgent",
     "Alienware Update"
 )
-
-if (-not (Test-Path $tempDir)) {
-    New-Item -Path $tempDir -ItemType Directory | Out-Null
-}
 
 
 function Get-ComputerManufacturer {
@@ -54,17 +48,29 @@ function Remove-ConflictingApps {
     }
 }
 
-
 function Install-DellCommandUpdate {
     $model = Get-DellModel
-    $installerUrl = $dellModelInstallers[$model]
+    $installerUrl = ""
+
+    # Match partial model names like "Vostro", "Latitude", etc.
+    foreach ($key in $dellModelInstallers.Keys) {
+        if ($model -like "*$key*") {
+            $installerUrl = $dellModelInstallers[$key]
+            break
+        }
+    }
 
     if (-not $installerUrl) {
         Write-Output "No specific installer found for model $model. Exiting."
         return
     }
 
-    Write-Output "Downloading Dell Command | Update installer for model $model..."
+    # Ensure TEMP-DCU directory exists
+    if (-not (Test-Path $tempDir)) {
+        New-Item -Path $tempDir -ItemType Directory | Out-Null
+    }
+
+    Write-Output "Downloading Dell Command | Update installer for model $model ($key)..."
 
     try {
         Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -ErrorAction Stop
@@ -77,7 +83,6 @@ function Install-DellCommandUpdate {
         Write-Output "Installation failed: $($_.Exception.Message)"
     }
 }
-
 
 function Update-Drivers {
     Write-Output "Checking for driver updates using Dell Command | Update..."
@@ -109,7 +114,7 @@ function Update-Drivers {
     }
 }
 
-
+# Function to report results back to Ninja RMM (pseudo code, replace with actual Ninja RMM API)
 function Report-ToNinjaRMM {
     Write-Output "Reporting results to NinjaRMM..."
     # Report installed and failed drivers here
