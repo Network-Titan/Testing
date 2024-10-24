@@ -48,6 +48,9 @@ function Remove-ConflictingApps {
     }
 }
 
+ # Set TLS 1.2 
+[Net.ServicePointManager]:: SecureProtocol = [Net.SecurityyProtocolType]::Tls12   
+
 function Install-DellCommandUpdate {
     $model = Get-DellModel
     $installerUrl = ""
@@ -91,7 +94,7 @@ function Update-Drivers {
         $updateResults = & 'C:\Program Files\Dell\CommandUpdate\dcu-cli.exe' /applyUpdates /silent /noreboot
         Write-Output "Dell Command | Update process completed."
 
-        # Parse the output for installed and failed drivers
+        # Parse the output 
         $installedDrivers = $updateResults | Select-String -Pattern "Installation Succeeded"
         $failedDrivers = $updateResults | Select-String -Pattern "Installation Failed"
 
@@ -137,8 +140,8 @@ if ((Get-ComputerManufacturer) -like "*Dell*") {
     } else {
         Write-Output "Dell Command | Update is not installed. Attempting to install..."
         Install-DellCommandUpdate
-        # Check for driver updates after installation
-        Update-Drivers
+        
+            Update-Drivers
     }
 } else {
     Write-Output "This is not a Dell computer. Exiting script."
